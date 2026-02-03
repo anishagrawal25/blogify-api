@@ -1,17 +1,20 @@
 const express = require('express');
-
-// Create a router instance (mini app)
 const router = express.Router();
 
-// GET /api/v1/posts
-router.get('/', (req, res) => {
-  res.send('Fetching all blog posts from the modular router!');
+// Import controllers
+const {
+  getAllPosts,
+  getPostById
+} = require('../controllers/posts.controller');
+
+// Main Blogify Routes
+router.get('/', getAllPosts);
+router.get('/:id', getPostById);
+
+// Test route (optional)
+router.post('/test-body', (req, res) => {
+  console.log('Received body:', req.body);
+  res.status(200).json({ status: 'success', received: req.body });
 });
 
-// POST /api/v1/posts
-router.post('/', (req, res) => {
-  res.send('Creating a new blog post...');
-});
-
-// Export the router
 module.exports = router;

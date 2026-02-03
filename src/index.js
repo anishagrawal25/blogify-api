@@ -1,20 +1,47 @@
+// src/index.js
 const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// 1. Import our new post router
-const postRouter = require('./routes/posts.routes.js');
+// Import Blogify routes
+const postRoutes = require('./routes/posts.routes');
 
-// Main welcome route
-app.get('/', (req, res) => {
-  res.send('Welcome to the Blogify API!');
+// --- Our Custom Middleware ---
+const requestLogger = (req, res, next) => {
+  console.log(`Request Received: ${req.method} ${req.originalUrl}`);
+  next();
+};
+
+
+app.use(requestLogger);
+
+
+app.get('/about', (req, res) => {
+  res.send('About Page!');
 });
 
-// 2. Mount the router
-// This tells Express: "For any request that starts with /api/v1/posts,
-// hand it over to the postRouter to handle."
-app.use('/api/v1/posts', postRouter);
+app.get('/error-test', (req, res, next) => {
+  // We create a new Error object.
+  const myError = new Error('This is a deliberately thrown error!');
+  
+  // We pass it to next(), which sends it to our error handler.
+  next(myError);
+});
+// THE ERROR HANDLING MIDDLEWARE (MUST BE LAST!)
+const errorHandler = (err, req, res, next) => {
+  // 1. Log the error for the developer (on the server console)
+  console.error(err.stack); // Shows the full error details
+
+  // 2. Send a clean, generic JSON response to the client
+  res.status(500).json({
+    success: false,
+    error: 'Internal Server Error' 
+  });
+};
+
+// Mount it at the very end of the file
+app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}/`);
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
